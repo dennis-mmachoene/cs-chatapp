@@ -3,6 +3,7 @@ using API;
 using API.Data;
 using API.Endpoints;
 using API.Models;
+using API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,8 @@ builder
     .Services.AddIdentityCore<AppUser>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
+
+builder.Services.AddScoped<TokenService>();
 
 builder
     .Services.AddAuthentication(options =>
@@ -43,6 +46,8 @@ builder
             ValidateAudience = false,
         };
     });
+
+builder.Services.AddAuthorization();
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
