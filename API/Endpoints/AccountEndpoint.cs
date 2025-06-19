@@ -1,5 +1,6 @@
 using API.Common;
 using API.Models;
+using API.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,7 +19,9 @@ namespace API.Endpoints
                     UserManager<AppUser> userManager,
                     [FromForm] string fullname,
                     [FromForm] string email,
-                    [FromForm] string password
+                    [FromForm] string password,
+                    [FromForm] string userName,
+                    [FromForm] IFormFile? profileImage
                 ) =>
                 {
                     var userFromDb = await userManager.FindByEmailAsync(email);
@@ -28,7 +31,25 @@ namespace API.Endpoints
                         return Results.BadRequest(Response<string>.Failure("User already exists."));
                     }
 
-                    var user = new AppUser { Email = email, FullName = fullname };
+                    if (profileImage is null)
+                    {
+                        return Results.BadRequest(
+                            Response<string>.Failure("Profile image is required")
+                        );
+                    }
+
+                    var picture = await FileUpload.Upload(profileImage);
+
+                    picture =
+                        $"{context.Request.Scheme}://{context.Request.Host}/uploads/{picture}";
+
+                    var user = new AppUser
+                    {
+                        Email = email,
+                        FullName = fullname,
+                        UserName = userName,
+                        ProfileImage = picture,
+                    };
 
                     var result = await userManager.CreateAsync(user, password);
 
